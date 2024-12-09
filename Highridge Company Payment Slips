@@ -1,0 +1,77 @@
+# Highridge Company Payment Slips
+set.seed(Sys.time())  # Set seed for reproducibility
+
+# Step 1: list of random names
+names_list <- c(
+    "Alice", "Bob", "Charlie", "Diana", "Ethan", "Fiona", "George", "Hannah", 
+    "Ivan", "Jenna", "Kevin", "Laura", "Michael", "Nina", "Oscar", "Paula", 
+    "Quinn", "Rachel", "Steve", "Tina", "Uma", "Victor", "Wendy", "Xander", 
+    "Yvonne", "Zack", "idris", "Tunde", "Momodu", "James", "Drinkwater"
+)
+
+custom_random_uniform <- function(min_rate, max_rate, step) {
+    # Generates a random value between min_rate and max_rate with a given step
+    num_steps <- floor((max_rate - min_rate) / step) + 1
+    random_step <- sample(0:(num_steps - 1), 1)
+    return(min_rate + (random_step * step))
+}
+
+# Generate 5 random values for testing
+for (i in 1:5) {
+    print(custom_random_uniform(80, 120, 5))  # Random value between 80 and 120 with step size of 5
+}
+
+# Step 2: Create a list of 400 workers dynamically
+num_workers <- 400
+workers <- paste("Worker", 1:num_workers, sep="_")
+
+# Step 3: Assign random attributes for workers
+worker_details <- lapply(workers, function(worker) {
+    list(
+        name = sample(names_list, 1),  # Assign a random name
+        gender = sample(c("Male", "Female"), 1),
+        hourly_rate = custom_random_uniform(80, 120, 5),  # Hourly rate between $80 and $120
+        hours_worked = sample(40:60, 1)  # Hours worked between 40 and 60
+    )
+})
+
+names(worker_details) <- workers
+
+# Step 4: Calculate weekly payments and determine employee level
+for (worker in workers) {
+    details <- worker_details[[worker]]
+    # Calculate weekly payment
+    details$weekly_payment <- round(details$hourly_rate * details$hours_worked, 2)
+    
+    # Determine employee level based on conditions
+    salary <- details$weekly_payment
+    gender <- details$gender
+    
+    if (salary > 10000 && salary < 20000) {
+        details$employee_level <- "A1"
+    } else if (salary > 7500 && salary < 30000 && gender == "Female") {
+        details$employee_level <- "A5-F"
+    } else {
+        details$employee_level <- "Standard"
+    }
+    
+    worker_details[[worker]] <- details
+}
+
+# Step 5: Generate payment slips
+cat("Highridge Construction Company - Weekly Payment Slips\n")
+cat(rep("=", 50), "\n")
+for (worker in workers) {
+    details <- worker_details[[worker]]
+    tryCatch({
+        cat(sprintf(
+            "%s | Name: %s | Gender: %s | Hourly Rate: $%.2f | Hours Worked: %d | "
+            "Weekly Payment: $%.2f | Employee Level: %s\n",
+            worker, details$name, details$gender, details$hourly_rate, 
+            details$hours_worked, details$weekly_payment, details$employee_level
+        ))
+    }, error = function(e) {
+        cat(sprintf("Unexpected error while printing payment slip for %s: %s\n", worker, e$message))
+    })
+}
+
